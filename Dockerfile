@@ -8,13 +8,11 @@ RUN go mod download
 ADD . .
 RUN GOOS=linux CGO_ENABLED=0 GOARCH=amd64 go build -ldflags="-s -w" -installsuffix cgo -v  -o main ./ || { echo "Build failed"; exit 1; }
 
-FROM code3f3/libreoffice:24.2.4.2 AS prod
+FROM golang:alpine3.20 AS prod
 
 # 设置固定的项目路径
-ENV WORKDIR /var/www/o2h
+ENV WORKDIR /var/www/coze
 
-# 添加I18N多语言文件、静态文件、配置文件、模板文件
-COPY --from=build /coze/etc  $WORKDIR/etc
 # 复制二进制到镜像、添加应用可执行文件，并设置执行权限
 COPY --from=build /coze/main $WORKDIR/
 
