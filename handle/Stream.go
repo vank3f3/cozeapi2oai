@@ -96,13 +96,22 @@ func sendChunk(c *gin.Context, model string, content string, isFinish bool) {
 		},
 	}
 
-	// 未终止
-	if !isFinish {
-		c.SSEvent("message", respData)
-		return
-	} else {
-		// 终止
-		c.SSEvent("done", respData)
+	c.Writer.Header().Set("Content-Type", "text/event-stream")
+	c.Writer.Header().Set("Cache-Control", "no-cache")
+	c.Writer.Header().Set("Connection", "keep-alive")
+
+	// 把 respData 转成 Json
+	respDataJson, err := json.Marshal(respData)
+	if err != nil {
+		panic(err)
+	}
+	// 手动构建 SSE 消息
+	sseMessage := fmt.Sprintf("data: %s\n\n", respDataJson)
+	// 写入 SSE 消息到响应中
+	c.Writer.Write([]byte(sseMessage))
+
+	// 终止
+	if isFinish {
 		c.String(http.StatusOK, "data: [DONE]\n\n")
 		c.Writer.Flush()
 		return
