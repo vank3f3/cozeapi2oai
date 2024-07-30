@@ -39,6 +39,7 @@ func ChatCompletions(c *gin.Context) {
 	// 如果是接口保活
 	if requestBody.Messages[0].Content == "hi" || requestBody.Messages[0].Content == "ping" {
 		Hi(c, requestBody.Model)
+		return
 	}
 
 	user := requestBody.User
